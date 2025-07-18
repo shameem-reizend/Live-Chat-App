@@ -1,19 +1,38 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Send, Paperclip, Smile } from 'lucide-react';
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string | Blob) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
   const [message, setMessage] = useState('');
+  const [file, setFile] = useState<Blob>();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      console.log('Selected file:', files[0]);
+      setMessage(files[0].name);
+      setFile(files[0]);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message.trim());
-      setMessage('');
+    if(file){
+      onSendMessage(file);
     }
+    else if (message.trim()) {
+      onSendMessage(message.trim());
+    }
+    setMessage('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -28,11 +47,19 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <div className="flex items-center gap-2">
           <button
+          onClick={handleButtonClick}
             type="button"
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <Paperclip className="w-5 h-5 text-gray-600" />
           </button>
+
+           <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+            />
         </div>
         
         <div className="flex-1 relative">

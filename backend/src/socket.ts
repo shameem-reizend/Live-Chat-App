@@ -27,12 +27,13 @@ export const initSocket = (server: any) => {
     });
 
     socket.on("send_message", (data) => {
+
+        console.log(data.message);
         socket.to(data.room).emit("receive_message", {
         message: data.message,
         senderId: data.senderId,
         receiverId: data.receiverId
         });
-        console.log(`Message sent to room ${data.room}:`, data.message, "from user", data.senderId, "to user", data.receiverId);
     });
 
     socket.on("disconnect", () => {

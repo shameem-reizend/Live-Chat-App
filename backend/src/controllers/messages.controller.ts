@@ -5,12 +5,13 @@ import { AppError } from "../utils/AppError";
 
 export const saveMessage = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id, text, timestamp, senderId, receiverId, conversationId } = req.body;
+    const { id, text, type, timestamp, senderId, receiverId, conversationId } = req.body;
     
     const messageRepository = AppDataSource.getRepository(Message);
     const newMessage = messageRepository.create({
       id,
       text,
+      type,
       timestamp,
       isSent: true,
       isRead: false,

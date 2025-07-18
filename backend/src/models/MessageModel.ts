@@ -17,6 +17,9 @@ export class Message {
   text!: string;
 
   @Column()
+  type!: string;
+
+  @Column()
   timestamp!: string; 
 
   @Column({ default: true })

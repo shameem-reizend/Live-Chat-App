@@ -6,6 +6,7 @@ import MessageInput from './MessageInput';
 interface Message {
   id: string;
   text: string;
+  type: string
   timestamp: string;
   isSent: boolean;
   isRead: boolean;
@@ -28,7 +29,7 @@ interface Conversation {
 interface ChatAreaProps {
   activeConversation?: Conversation | null;
   messages: Message[];
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string | Blob) => void;
   currentUser: User | null;
 }
 

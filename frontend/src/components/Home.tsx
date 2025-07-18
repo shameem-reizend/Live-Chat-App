@@ -5,7 +5,8 @@ import ChatArea from './ChatArea';
 
 interface Message {
   id: string;
-  text: string;
+  text: string | Blob;
+  type: string
   timestamp: string;
   isSent: boolean;
   isRead: boolean;
@@ -28,6 +29,7 @@ interface Conversation {
 }
 
 export const Home: React.FC = () => {
+
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -96,6 +98,7 @@ export const Home: React.FC = () => {
 
     socket.off('receive_message'); 
     socket.on('receive_message', (data) => {
+      console.log(data.message);
       setMessages(prev => [...prev, {
         ...data.message,
         isSent: data.senderId === currentUser.id
@@ -103,26 +106,66 @@ export const Home: React.FC = () => {
     });
   };
 
-  const handleSendMessage = async (messageText: string) => {
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') resolve(reader.result);
+        else reject('Failed to convert blob to base64.');
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+
+  const handleSendMessage = async (message: string | Blob) => {
     if (!activeConversation || !socket || !currentUser) return;
 
     const now = new Date();
     const isoTime = now.toISOString();
-    const displayTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const displayTime = now.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false 
+    });
+    let newMessage = {}
 
-    const newMessage = {
-      id: Date.now().toString(),
-      text: messageText,
-      timestamp: isoTime,
-      isSent: true,
-      isRead: false,
-      senderId: currentUser.id,
-      receiverId: receiverId,
-      conversationId: activeConversation.id
-    };
+    if(typeof(message) == 'string'){
+      
+      newMessage = {
+        id: Date.now().toString(),
+        text: message,
+        type: 'text',
+        timestamp: isoTime,
+        isSent: true,
+        isRead: false,
+        senderId: currentUser.id,
+        receiverId: receiverId,
+        conversationId: activeConversation.id
+      };
+    } else {
+      const base64String = await blobToBase64(message);
+
+      newMessage = {
+        id: Date.now().toString(),
+        text: base64String,
+        type: 'file',
+        timestamp: isoTime,
+        isSent: true,
+        isRead: false,
+        senderId: currentUser.id,
+        receiverId: receiverId,
+        conversationId: activeConversation.id
+      };
+    }
+    
+
+    const displayMessage = { ...newMessage, timestamp: displayTime };
+    setMessages(prev => [...prev, displayMessage]);
 
     try {
-      await fetch('http://localhost:4000/messages', {
+      const response = await fetch('http://localhost:4000/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,25 +174,22 @@ export const Home: React.FC = () => {
         body: JSON.stringify(newMessage)
       });
 
+      if (!response.ok) {
+        throw new Error(`Failed to send message: ${response.status}`);
+      }
+
       socket.emit('send_message', {
         room: activeConversation.id,
-        message: {
-          ...newMessage,
-          timestamp: displayTime
-        },
+        message: displayMessage,
         senderId: currentUser.id,
         receiverId: receiverId
       });
 
-      setMessages(prev => [...prev, {
-        ...newMessage,
-        timestamp: displayTime
-      }]);
     } catch (error) {
       console.error('Error sending message:', error);
+      setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <div className="w-full max-w-100 bg-white shadow-lg flex h-screen">

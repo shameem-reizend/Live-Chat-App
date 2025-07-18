@@ -3,6 +3,7 @@ import React from 'react';
 interface Message {
   id: string;
   text: string;
+  type: string
   timestamp: string;
   isSent: boolean;
   isRead: boolean;
@@ -24,9 +25,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isCurrentUser }) => 
             ? 'bg-green-500 text-white rounded-br-none' 
             : 'bg-gray-200 text-gray-800 rounded-bl-none'
         }`}>
-          <p className="whitespace-pre-wrap word-break break-word">
-            {message.text}
-          </p>
+          {message.type === 'file' ? <img src = {message.text} /> 
+          : <p className="whitespace-pre-wrap word-break break-word">
+              {message.text}
+            </p>
+          }      
           
           <div className={`text-xs mt-1 flex items-center justify-end ${
             isCurrentUser ? 'text-blue-100' : 'text-gray-500'
