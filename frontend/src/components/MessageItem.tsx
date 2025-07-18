@@ -25,7 +25,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isCurrentUser }) => 
             ? 'bg-green-500 text-white rounded-br-none' 
             : 'bg-gray-200 text-gray-800 rounded-bl-none'
         }`}>
-          {message.type === 'file' ? <img src = {message.text} /> 
+          {message.type === 'file' ? <img src = {message.text} height={300} width={300} /> 
           : <p className="whitespace-pre-wrap word-break break-word">
               {message.text}
             </p>

@@ -4,6 +4,7 @@ import ConversationItem from './ConversationItem';
 import axios from 'axios';
 import { AddUserButton } from './AddUserButton';
 import { useNavigate } from 'react-router-dom';
+import { googleLogout } from '@react-oauth/google';
 
 interface User {
   id: number;
@@ -90,6 +91,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
     const response = await axios.get("http://localhost:4000/auth/logout");
     console.log(response);
     localStorage.clear();
+    googleLogout();
     Navigate('/login');
   }
 
@@ -102,8 +104,10 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
             <MessageCircle className="w-6 h-6 text-green-500" />
             Chats
           </h1>
-          <LogOut onClick={handleLogout}/>
-          <AddUserButton onNewConversation={handleNewConversation} />
+          <div className='flex items-center gap-2'>
+            <AddUserButton onNewConversation={handleNewConversation} />
+            <LogOut className='cursor-pointer hover:bg-gray-200' onClick={handleLogout}/>
+          </div>
         </div>
 
         <div className="relative">

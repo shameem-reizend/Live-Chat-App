@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import conversationRoutes from './routes/conversation.routes';
 import userRoutes from './routes/user.routes';
 import messageRoutes from './routes/messages.routes';
+import videoRoutes from './routes/video.routes';
 
 const app = express();
 app.use(cors({
@@ -16,9 +17,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/auth", authRoutes);
-app.use("/conversation", conversationRoutes)
+app.use("/conversation", conversationRoutes);
 app.use('/users', userRoutes);
-app.use('/messages', messageRoutes)
+app.use('/messages', messageRoutes);
+app.use('/room', videoRoutes);
 
 app.use(globalErrorHandler);
 export default app;

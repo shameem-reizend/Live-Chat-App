@@ -9,6 +9,12 @@ import { Conversation } from './ConversationModel';
 
 @Entity()
 export class User {
+  static create(arg0: { email: string | undefined; name: string | undefined; avatar: string | undefined; googleId: string; isVerified: boolean; }): void | PromiseLike<void> {
+    throw new Error('Method not implemented.');
+  }
+  static find(arg0: { where: { email: string | undefined; }; }) {
+    throw new Error('Method not implemented.');
+  }
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -21,21 +27,16 @@ export class User {
   @Column()
   password!: string;
 
-  // 👇 Relations (optional but helpful for ORM use)
 
-  // Messages sent by this user
-  @OneToMany(() => Message, (message) => message.sender)
+  @OneToMany(() => Message, (message) => message.sender, {onDelete: 'CASCADE'})
   sentMessages!: Message[];
 
-  // Messages received by this user
-  @OneToMany(() => Message, (message) => message.receiver)
+  @OneToMany(() => Message, (message) => message.receiver, {onDelete: 'CASCADE'})
   receivedMessages!: Message[];
 
-  // Conversations where this user is user1
-  @OneToMany(() => Conversation, (conversation) => conversation.user1)
+  @OneToMany(() => Conversation, (conversation) => conversation.user1, {onDelete: 'CASCADE'})
   conversationsInitiated!: Conversation[];
 
-  // Conversations where this user is user2
-  @OneToMany(() => Conversation, (conversation) => conversation.user2)
+  @OneToMany(() => Conversation, (conversation) => conversation.user2, {onDelete: 'CASCADE'})
   conversationsReceived!: Conversation[];
 }

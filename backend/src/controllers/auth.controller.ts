@@ -8,6 +8,8 @@ import {
   generateRefreshToken,
 } from '../utils/jwt';
 import { AppError } from '../utils/AppError';
+import axios from 'axios';
+import { OAuth2Client } from 'google-auth-library';
 
 interface authenticateRequest extends Request {
       user?: {
@@ -118,5 +120,60 @@ export const getCurrentUser = async (req: authenticateRequest, res: Response, ne
     res.json(user);
   } catch (err) {
     next(new AppError('Server error', 500));
+  }
+};
+
+
+// Initialize Google OAuth client
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  'postmessage' // For server-side flow
+);
+
+export const googleAuth = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userRepo = AppDataSource.getRepository(User);
+    const { code } = req.body;
+    const { tokens } = await googleClient.getToken(code);
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token!,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw new Error('Invalid token payload');
+    }
+
+    const { email, name, family_name } = payload;
+
+    let user = await userRepo.findOne({ where: { email } }); 
+
+    if (!user) {
+      const hashed = await bcrypt.hash(`${family_name}@123`, 10);
+      user = userRepo.create({
+        email,
+        name,
+        password: hashed
+      });
+      await userRepo.save(user);
+
+      const userDetails = await userRepo.findOne({ where: { email } });
+
+      if (userDetails) {
+        const accessToken = generateAccessToken(userDetails);
+        console.log("accessToken - ", accessToken);
+        res.json({ accessToken, user: userDetails });
+      }
+    } else {
+      const accessToken = generateAccessToken(user);
+      res.json({ accessToken, user });
+    }
+    
+  } catch (error) {
+    // console.error('Google auth error:', error);
+    next(new AppError('Google authentication failed', 500));
   }
 };
