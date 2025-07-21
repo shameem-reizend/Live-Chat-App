@@ -13,6 +13,7 @@ interface Conversation {
   createdAt: string;
   user1: User;
   user2: User;
+  lastMessage: string;
 }
 
 interface AddUserButtonProps {
@@ -65,7 +66,7 @@ export const AddUserButton = ({ onNewConversation }: AddUserButtonProps) =>  {
         }
       );
       const newConversation = response.data;
-      onNewConversation(newConversation); // This will update the parent state
+      onNewConversation(newConversation);
       setIsModalOpen(false);
 
     } catch (error) {

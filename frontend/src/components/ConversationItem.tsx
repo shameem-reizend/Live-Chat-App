@@ -11,6 +11,7 @@ interface Conversation {
   createdAt: string;
   user1: User;
   user2: User;
+  lastMessage: string
 }
 
 interface ConversationItemProps {
@@ -26,9 +27,10 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   currentUserId,
   isActive,
   onClick,
-  lastMessageDate
+  lastMessageDate,
 }) => {
   const otherUser = currentUserId === conversation.user1.id ? conversation.user2 : conversation.user1;
+  
 
   return (
     <div
@@ -58,7 +60,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
           </div>
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500 truncate">
-              {/* Last message preview would go here */}
+              {conversation.lastMessage}
             </p>
             {/* Unread count badge */}
             {/* <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1 min-w-[1.25rem] h-5 flex items-center justify-center ml-2">

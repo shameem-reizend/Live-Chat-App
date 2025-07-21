@@ -26,6 +26,7 @@ interface Conversation {
   createdAt: string;
   user1: User;
   user2: User;
+  lastMessage: string;
 }
 
 export const Home: React.FC = () => {

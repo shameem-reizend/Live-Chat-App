@@ -21,6 +21,8 @@ app.use("/conversation", conversationRoutes);
 app.use('/users', userRoutes);
 app.use('/messages', messageRoutes);
 app.use('/room', videoRoutes);
-
+app.get('/', (req, res) => {
+  res.send('Welcome to the backend server!');
+});
 app.use(globalErrorHandler);
 export default app;

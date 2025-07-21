@@ -5,7 +5,6 @@ import LoginForm from './auth/LoginForm';
 import RegistrationForm from './auth/RegisterForm';
 import { Home } from './components/Home';
 import ProtectedRoutes from './protected/ProtectedRoutes';
-import { GoogleLoginPage } from './auth/GoogleLoginPage';
 
 export const App: React.FC = () => {
 

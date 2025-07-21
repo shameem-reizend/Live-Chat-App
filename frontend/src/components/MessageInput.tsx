@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Send, Paperclip, Smile } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (message: string | Blob) => void;
@@ -72,12 +72,12 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
             rows={1}
             style={{ minHeight: '40px' }}
           />
-          <button
+          {/* <button
             type="button"
             className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
           >
             <Smile className="w-4 h-4 text-gray-600" />
-          </button>
+          </button> */}
         </div>
         
         <button

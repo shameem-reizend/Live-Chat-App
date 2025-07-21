@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   Unique,
   OneToMany,
+  Column,
 } from 'typeorm';
 import { User } from './UserModel';
 import { Message } from './MessageModel';
@@ -14,6 +15,9 @@ import { Message } from './MessageModel';
 export class Conversation {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @Column({default: 'hy'})
+  lastMessage!: string;
 
   @ManyToOne(() => User, { eager: true })
   user1!: User;

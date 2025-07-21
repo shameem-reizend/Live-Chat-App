@@ -17,6 +17,7 @@ interface Conversation {
   createdAt: string;
   user1: User;
   user2: User;
+  lastMessage: string
 }
 
 interface ConversationSidebarProps {
