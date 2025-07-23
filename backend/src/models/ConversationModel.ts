@@ -28,6 +28,9 @@ export class Conversation {
   @CreateDateColumn()
   createdAt!: Date;
 
+  @CreateDateColumn()
+  lastMessageDate!: Date;
+
   @OneToMany(() => Message, (message) => message.conversation)
   messages!: Message[];
 }

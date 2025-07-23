@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 import ConversationSidebar from './ConversationSidebar';
 import ChatArea from './ChatArea';
+import axios from 'axios';
+import { googleLogout } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import API from '../axios';
 
 interface Message {
   id: string;
@@ -19,6 +23,8 @@ interface User {
   id: number;
   name: string;
   email: string;
+  isOnline: boolean;
+  lastSeen: string | Date;
 }
 
 interface Conversation {
@@ -27,6 +33,7 @@ interface Conversation {
   user1: User;
   user2: User;
   lastMessage: string;
+  lastMessageDate: string;
 }
 
 export const Home: React.FC = () => {
@@ -36,40 +43,64 @@ export const Home: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [receiverId, setReceiverId] = useState(0);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const Navigate = useNavigate();
 
+  
   useEffect(() => {
-    const newSocket = io('http://localhost:4000', {
-      withCredentials: true,
-      auth: {
-        token: localStorage.getItem('accessToken') 
-      }
-    });
-    setSocket(newSocket);
-
-    const fetchCurrentUser = async () => {
+    const fetchCurrentUserAndConnect = async () => {
       try {
-        const response = await fetch('http://localhost:4000/auth/me', {
+        const accessToken = localStorage.getItem("accessToken");
+
+        const response = await axios.get(`${BASE_URL}/auth/me`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
-        const user = await response.json();
+
+        const user = response.data;
         setCurrentUser(user);
+
+        const newSocket = io(`${BASE_URL}`, {
+          withCredentials: true,
+          auth: {
+            token: accessToken,
+          },
+          query: {
+            userId: user.id,
+          },
+        });
+
+        setSocket(newSocket);
+
+        newSocket.on("connect", () => {
+          console.log("Connected to socket server with userId:", user.id);
+        });
+
+        return () => {
+          newSocket.disconnect();
+        };
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error("Error fetching current user:", error);
       }
     };
 
-    fetchCurrentUser();
-
-    return () => {
-      newSocket.disconnect();
-    };
+    fetchCurrentUserAndConnect();
   }, []);
+
+  const handleLogout = async () => {
+    const response = await API.get("/auth/logout");
+    console.log(response);
+    localStorage.clear();
+    googleLogout();
+    socket?.disconnect();
+    Navigate('/login');
+  }
+
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      const response = await fetch(`http://localhost:4000/messages/${conversationId}`, {
+      const response = await fetch(`${BASE_URL}/messages/${conversationId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -87,13 +118,26 @@ export const Home: React.FC = () => {
     }
   };
 
-  const handleConversationSelect = async (conversation: Conversation) => {
-    if (!socket || !currentUser) return;
+
+  const readMessage = async (conversationId: string, userId: number) => {
     
+    const response = await API.post(`/messages/read`, {
+      conversationId: conversationId,
+      userId: userId
+    })
+   
+  }
+
+  const handleConversationSelect = async (conversation: Conversation) => {
+    if (!socket || !currentUser) {
+      return;
+    }
+
     setReceiverId(conversation.user2.id);
     setActiveConversation(conversation);
 
     await fetchMessages(conversation.id);
+    await readMessage(conversation.id, conversation.user2.id);
     
     socket.emit('join_room', conversation.id);
 
@@ -166,7 +210,7 @@ export const Home: React.FC = () => {
     setMessages(prev => [...prev, displayMessage]);
 
     try {
-      const response = await fetch('http://localhost:4000/messages', {
+      const response = await fetch(`${BASE_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,6 +241,7 @@ export const Home: React.FC = () => {
         <ConversationSidebar 
           onConversationSelect={handleConversationSelect}
           activeConversationId={activeConversation?.id}
+          handleLogout = {handleLogout}
         />
         <ChatArea
           activeConversation={activeConversation}

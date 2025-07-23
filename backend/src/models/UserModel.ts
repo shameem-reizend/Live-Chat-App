@@ -27,6 +27,12 @@ export class User {
   @Column()
   password!: string;
 
+  @Column({ default: false })
+  isOnline!: boolean;
+
+  @Column({ type: "timestamp", nullable: true })
+  lastSeen!: Date;
+
 
   @OneToMany(() => Message, (message) => message.sender, {onDelete: 'CASCADE'})
   sentMessages!: Message[];

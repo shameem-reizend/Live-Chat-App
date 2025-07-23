@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Search, MessageCircle, LogOut } from 'lucide-react';
 import ConversationItem from './ConversationItem';
-import axios from 'axios';
 import { AddUserButton } from './AddUserButton';
-import { useNavigate } from 'react-router-dom';
-import { googleLogout } from '@react-oauth/google';
+import API from '../axios';
 
 interface User {
   id: number;
   name: string;
   email: string;
+  isOnline:boolean;
+  lastSeen: string | Date;
 }
 
 interface Conversation {
@@ -18,27 +18,29 @@ interface Conversation {
   user1: User;
   user2: User;
   lastMessage: string
+  lastMessageDate: string;
 }
 
 interface ConversationSidebarProps {
   onConversationSelect: (conversation: Conversation) => void;
   activeConversationId: string | null | undefined;
+  handleLogout: () => void
 }
 
 const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   onConversationSelect,
-  activeConversationId
+  activeConversationId,
+  handleLogout,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const Navigate = useNavigate();
 
   const fetchCurrentUser = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:4000/auth/me", {
+      const response = await API.get("/auth/me", {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -52,7 +54,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const fetchAllConversations = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:4000/conversation", {
+      const response = await API.get("/conversation", {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -87,14 +89,6 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
     setConversations(prev => [newConversation, ...prev]);
     onConversationSelect(newConversation);
   };
-
-  const handleLogout = async () => {
-    const response = await axios.get("http://localhost:4000/auth/logout");
-    console.log(response);
-    localStorage.clear();
-    googleLogout();
-    Navigate('/login');
-  }
 
   return (
     <div className="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col h-full">
@@ -149,7 +143,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               currentUserId={currentUser?.id}
               isActive={activeConversationId === conversation.id}
               onClick={() => onConversationSelect(conversation)}
-              lastMessageDate={formatDate(conversation.createdAt)}
+              lastMessageDate={formatDate(conversation.lastMessageDate)}
             />
           ))
         )}

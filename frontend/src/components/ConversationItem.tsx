@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import API from '../axios';
 
 interface User {
   id: number;
   name: string;
   email: string;
+  isOnline: boolean;
 }
 
 interface Conversation {
@@ -30,7 +32,21 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   lastMessageDate,
 }) => {
   const otherUser = currentUserId === conversation.user1.id ? conversation.user2 : conversation.user1;
-  
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const getUnreadCount = async () => {
+    const response = await API.post(`/messages/unread`, {
+      senderId: otherUser.id,
+      receiverId: currentUserId
+    })
+    
+    setUnreadCount(response.data.count);
+  }
+
+  useEffect(() => {
+    getUnreadCount();
+  }, [conversation]);
 
   return (
     <div
@@ -42,10 +58,13 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
       <div className="flex items-center gap-3">
         {/* Avatar */}
         <div className="relative">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-medium">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium">
             {otherUser.name.charAt(0).toUpperCase()}
           </div>
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+          {otherUser.isOnline ? 
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div> :
+          <div></div>
+          }
         </div>
 
         {/* Content */}
@@ -63,9 +82,10 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
               {conversation.lastMessage}
             </p>
             {/* Unread count badge */}
-            {/* <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1 min-w-[1.25rem] h-5 flex items-center justify-center ml-2">
-              2
-            </span> */}
+            {unreadCount != 0 ? <span className="bg-green-500 text-white text-xs rounded-full px-2 py-1 min-w-[1.25rem] h-5 flex items-center justify-center ml-2">
+              {unreadCount}
+            </span>: ''}
+            
           </div>
         </div>
       </div>

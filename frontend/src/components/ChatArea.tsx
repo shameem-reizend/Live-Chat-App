@@ -17,6 +17,8 @@ interface User {
   id: number;
   name: string;
   email: string;
+  isOnline: boolean;
+  lastSeen: string | Date;
 }
 
 interface Conversation {
@@ -66,6 +68,18 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     activeConversation.user2 : 
     activeConversation.user1;
 
+  function formatTimeTo12Hour(timeString: string | number | Date) {
+    const date = new Date(timeString);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    const period = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12 || 12; // Convert 0 to 12
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+
+    return `${hours}.${formattedMinutes}${period}`;
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Chat Header */}
@@ -73,16 +87,19 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-medium">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium">
                 {otherUser.name.charAt(0).toUpperCase()}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+              {otherUser.isOnline == true ? 
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div> :
+              <div></div>
+              }
+              
             </div>
             <div>
               <h2 className="font-semibold text-gray-900">{otherUser.name}</h2>
-              <p className="text-sm text-gray-500">
-                Online
-              </p>
+              {otherUser?.isOnline == true ? <p className="text-sm text-gray-500">Online</p> : <p className="text-sm text-gray-500">{otherUser.lastSeen? `Last seen at ${formatTimeTo12Hour(otherUser.lastSeen)}` : "Offline"}</p>}
+              
             </div>
           </div>
           <div className="flex items-center gap-2">

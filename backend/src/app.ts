@@ -10,6 +10,7 @@ import videoRoutes from './routes/video.routes';
 
 const app = express();
 app.use(cors({
+  // origin: 'http://16.16.76.226:3000',
   origin: 'http://localhost:5173',
   credentials: true,             
 }));

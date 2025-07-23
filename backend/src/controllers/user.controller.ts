@@ -11,7 +11,7 @@ export const getAllUsers = async (req: any, res: Response, next: NextFunction): 
   try {
 
     const users = await userRepo.find({
-      select: ['id', 'name', 'email'],
+      select: ['id', 'name', 'email', 'isOnline', 'lastSeen'],
       where: {
         id: Not(userId),
       },

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import axios from 'axios';
+import API from '../axios';
 
 interface User {
   id: number;
   name: string;
   email: string;
+  isOnline: boolean;
+  lastSeen: string | Date;
 }
 
 interface Conversation {
@@ -14,6 +16,7 @@ interface Conversation {
   user1: User;
   user2: User;
   lastMessage: string;
+  lastMessageDate: string;
 }
 
 interface AddUserButtonProps {
@@ -25,12 +28,13 @@ export const AddUserButton = ({ onNewConversation }: AddUserButtonProps) =>  {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const fetchUsers = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:4000/users', {
+      const response = await fetch(`${BASE_URL}/users`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -56,8 +60,8 @@ export const AddUserButton = ({ onNewConversation }: AddUserButtonProps) =>  {
 
   const handleStartConversation = async (userId: number) => {
     try {
-      const response = await axios.post(
-        "http://localhost:4000/conversation", 
+      const response = await API.post(
+        "/conversation", 
         { user2: userId }, 
         {
           headers: {

@@ -1,8 +1,8 @@
 import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
 import React from 'react';
 // import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from "react-router-dom";
+import API from "../axios";
 
 export const GoogleLoginPage: React.FC = () => {
   const Navigate = useNavigate();
@@ -11,7 +11,7 @@ export const GoogleLoginPage: React.FC = () => {
     onSuccess: async (tokenResponse) => {
       try {
         console.log(tokenResponse.code)
-        const response = await axios.post('http://localhost:4000/auth/google', {
+        const response = await API.post('/auth/google', {
           code: tokenResponse.code
         });
 

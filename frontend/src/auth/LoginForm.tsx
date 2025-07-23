@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, MessageCircle } from 'lucide-react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLoginPage } from './GoogleLoginPage';
+import API from '../axios';
 
 
 const LoginForm: React.FC = () => {
@@ -43,7 +43,7 @@ const LoginForm: React.FC = () => {
     
     setIsLoading(true);
     try{
-      const response = await axios.post('http://localhost:4000/auth/login', {email: email, password: password});
+      const response = await API.post('/auth/login', {email: email, password: password});
       console.log('Login response:', response.data);
       if (response.data.message) {
           localStorage.setItem('accessToken', response.data.accessToken);

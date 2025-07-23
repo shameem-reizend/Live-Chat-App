@@ -6,7 +6,7 @@ dotenv.config();
 import { AppDataSource } from './config/data-source'
 import app from './app';
 
-const PORT = process.env.PORT;
+const PORT = Number(process.env.PORT) || 4000;
 const server = http.createServer(app);
 
 initSocket(server);
@@ -14,9 +14,10 @@ initSocket(server);
 AppDataSource.initialize()
 .then(() => {
         console.log("DB connection successful")
-        server.listen(PORT, () => {
-        console.log(`The Server is Running on http://localhost:${PORT}`);
-    })
+        server.listen(PORT, '0.0.0.0', () => {
+        console.log(`The Server is Running on http://0.0.0.0:${PORT}`);
+    });
+
 }).catch((error: any) => {
     console.log("DB conncetion failed", error);
 })

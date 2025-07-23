@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, MessageCircle, Check } from 'lucide-react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API from '../axios';
 
 const RegistrationForm: React.FC = () => {
 
@@ -79,7 +79,7 @@ const RegistrationForm: React.FC = () => {
     
     setIsLoading(true);
 
-    const response = await axios.post('http://localhost:4000/auth/register', {
+    const response = await API.post('/auth/register', {
       name: formData.name,
       email: formData.email,
       password: formData.password
